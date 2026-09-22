@@ -1,0 +1,15 @@
+{
+  "name": "asdlc-plugins",
+  "owner": {
+    "name": "Gregory Douglas Sr."
+  },
+  "description": "Spec-Driven / AI-native SDLC skills for Claude Code",
+  "plugins": [
+    {
+      "name": "asdlc",
+      "source": "./plugins/asdlc",
+      "description": "Intent, spec and plan skills for the AI-native SDLC",
+      "keywords": ["sdlc", "intent", "spec", "governance"]
+    }
+  ]
+}

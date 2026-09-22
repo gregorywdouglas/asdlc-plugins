@@ -1,0 +1,8 @@
+{
+  "name": "asdlc",
+  "description": "Intent, spec and plan skills for the AI-native SDLC",
+  "author": {
+    "name": "Gregory Douglas Sr."
+  },
+  "keywords": ["sdlc", "intent", "spec", "governance"]
+}
