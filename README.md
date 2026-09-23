@@ -1,4 +1,4 @@
-# claude-plugins
+# asdlc-plugins
 
 Claude Code plugins for the Spec-Driven / AI-native SDLC.
 
@@ -21,11 +21,11 @@ registers itself once the folder is trusted:
 ```json
 {
   "extraKnownMarketplaces": {
-    "claude-plugins": {
-      "source": { "source": "github", "repo": "gregorywdouglas/claude-plugins" }
+    "asdlc-plugins": {
+      "source": { "source": "github", "repo": "gregorywdouglas/asdlc-plugins" }
     }
   },
-  "enabledPlugins": { "asdlc@claude-plugins": true }
+  "enabledPlugins": { "asdlc@asdlc-plugins": true }
 }
 ```
 
@@ -46,8 +46,8 @@ Later lifecycle skills (spec, plan, review) go in the same plugin under
 Test against a local checkout before pushing:
 
 ```shell
-/plugin marketplace add ./claude-plugins
-/plugin install asdlc@claude-plugins
+/plugin marketplace add ./asdlc-plugins
+/plugin install asdlc@asdlc-plugins
 ```
 
 Validate before every push — this checks the manifests, duplicate names, and
