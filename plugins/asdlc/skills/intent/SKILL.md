@@ -72,4 +72,35 @@ Recurring fixes the user has had to make to drafts from this skill. Add one
 line per correction as they come up; each line is worth more than any
 guidance above it, because it came from a real draft.
 
-- (none yet)
+- 2026-10-10 · cross-domain-documents · Unowned items accumulated (30+)
+  without challenge. When an answer leaves a question, concern or constraint
+  unowned, ask immediately who it would be sent to. A role is a placeholder:
+  record it as "role → person to be named by <date>" and list it in the
+  thin-sections report.
+- 2026-10-10 · cross-domain-documents · Proposed outcome reached 18 bullets
+  across independent concerns. If outcomes need different policy owners or
+  could be accepted separately, propose a split into sibling intents before
+  writing.
+- 2026-10-10 · cross-domain-documents · Session research (regulations, case
+  law) entered as rationale. The Problem section records only what the
+  originator said. Research goes in Evidence, labelled "research, not
+  originator statement", or becomes a question to the relevant owner.
+- 2026-10-10 · cross-domain-documents · Proposed outcome named Guidewire and
+  SharePoint. Name affected systems in Affected users and systems; the outcome
+  refers to "the systems and channels people use today".
+- 2026-10-10 · cross-domain-documents · Contradictory constraints (SharePoint
+  "interim" vs "backing repository") were carried forward. Stop and resolve, or
+  demote the constraint to an open question, before continuing.
+- 2026-10-10 · cross-domain-documents · Evidence cited a document with no
+  recorded location. Every source needs a path, link or source_ref; otherwise
+  record it as unverifiable.
+- 2026-10-10 · cross-domain-documents · A success signal was not checkable
+  ("zero decisions made from a superseded version"). For each signal, ask how
+  a sample would be selected and who runs it.
+- 2026-10-10 · cross-domain-documents · The draft was amended across three
+  weeks without stopping. If more than half of the open questions are
+  unowned, the next step is an ownership pass, not more drafting; say so and
+  stop.
+- 2026-10-10 · cross-domain-documents · Frontmatter omitted `source_ref` and
+  `supersedes`, and set `policy_owners: [TBD]`. Write every template field;
+  use an explicit empty value, never TBD.

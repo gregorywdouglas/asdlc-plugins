@@ -42,8 +42,10 @@ the hook rather than by good intentions.
 
 An intent may move to `accepted` only when all of the following hold:
 
-1. Every open question has a named owner. An unowned question is a decision
-   nobody is making.
+1. Every open question marked `needed by: acceptance` has a named person as
+   owner — not a role, not "unassigned". An unowned question is a decision
+   nobody is making. Questions marked `needed by: design` may be owned by
+   "design pass"; they block the spec, not acceptance.
 2. **Proposed outcome** names no technology, schema, file, or step. Anything
    technical that is genuinely fixed appears under **Constraints** with the
    authority that fixed it.
