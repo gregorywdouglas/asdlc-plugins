@@ -36,7 +36,7 @@ there is only one version in play.
 
 | Plugin  | Contents                                 |
 | ------- | ---------------------------------------- |
-| `asdlc` | `/asdlc:intent` — draft an `intent.md`   |
+| `asdlc` | `/asdlc:intent` — draft an `intent.md`; intent gate hook |
 
 Later lifecycle skills (spec, plan, review) go in the same plugin under
 `plugins/asdlc/skills/`, so one install carries the whole chain.
@@ -57,12 +57,32 @@ source paths:
 claude plugin validate .
 ```
 
-Neither manifest declares a `version`, so installs track the latest commit
-and a push is the release. If you add a `version`, bump it on every release
-or users keep the cached copy.
+`plugin.json` declares a `version`. Bump it on every release, or installs
+keep the cached copy: patch for wording, minor for new skills or gates.
 
 Skills are namespaced by plugin, so a skill added here never silently
 replaces a bundled command or a project skill of the same name.
+
+## Intent gate
+
+The plugin ships a `PreToolUse` hook that runs whenever a session writes or
+edits a file named `spec.md`, including through a shell redirect. The spec's
+folder name is taken as the slug, and the paired `intent/<slug>/intent.md`
+must pass the accept rule or the write is blocked:
+
+- status is `accepted` in the last commit, not only in the working copy;
+- every template frontmatter field is present, and `policy_owners` is not TBD;
+- every open question has an owner, and those needed by acceptance name a
+  person rather than a role or "design pass";
+- every constraint says who fixed it;
+- Proposed outcome names no technology from the term list;
+- Flagged concerns is populated, with owners, or marked not applicable.
+
+Whether success signals are checkable is left to the human sign-off.
+
+The term list is in `hooks/check_intent.py`. A project extends it with
+`intent/tech-terms.txt`, one term per line; a line starting with `-` removes a
+default term. The hook needs Python 3 on the PATH as `python3` or `python`.
 
 ## Repo layout
 
@@ -72,7 +92,8 @@ plugins/<plugin>/
   .claude-plugin/plugin.json        plugin manifest
   skills/<skill>/SKILL.md           the skill
   skills/<skill>/*.md               resources the skill reads
-  hooks/hooks.json                  (later) deterministic gates
+  hooks/hooks.json                  deterministic gates
+  hooks/*.py                        the scripts the gates run
 ```
 
 Skills reference their own resources with `${CLAUDE_SKILL_DIR}`. Installed
