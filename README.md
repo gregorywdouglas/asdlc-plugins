@@ -96,6 +96,12 @@ The hook needs a working Python 3, found as `python3`, `python` or the Windows
 execution aliases), or they shadow a real install. If no working Python is
 found, spec writes are blocked rather than let through unchecked.
 
+## Handoff
+
+`docs/HANDOFF.md` is the current state of the plugin: versions, the gate, the
+first run and its corrections, next steps and troubleshooting. Update it with
+each release.
+
 ## Repo layout
 
 ```

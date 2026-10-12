@@ -62,8 +62,9 @@ commit is the sign-off; git holds the author and the timestamp.
 
 The asdlc plugin's intent gate enforces rules 1 to 3, plus constraint owners
 and the committed status, by blocking any write to a spec file (`spec.md`,
-`provisional-spec.md` and similar) until the paired intent passes. Rules 4 and 5 stay with the person signing off. Project-specific
-technology names go in `intent/tech-terms.txt`, one per line.
+`provisional-spec.md` and similar) until the paired intent passes. Rules 4
+and 5 stay with the person signing off. Project-specific technology names go
+in `intent/tech-terms.txt`, one per line.
 
 ## Correcting an accepted intent
 
