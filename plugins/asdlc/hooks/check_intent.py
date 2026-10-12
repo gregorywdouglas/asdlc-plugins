@@ -67,26 +67,44 @@ SPEC_NAME = "spec.md"
 
 def main():
     try:
-        event = json.load(sys.stdin)
+        # Read bytes and decode as UTF-8: Windows consoles default to a code page.
+        event = json.loads(sys.stdin.buffer.read().decode("utf-8", errors="replace"))
     except ValueError:
-        return 0  # Not a hook payload we understand; never block on our own error.
+        return 0  # Not a hook payload we understand.
 
     cwd = event.get("cwd") or os.getcwd()
     specs = spec_paths(event, cwd)
     if not specs:
         return 0
 
-    report = []
-    for spec in specs:
-        problems, intent_rel = check_spec(spec)
-        if problems:
-            report.append((spec, intent_rel, problems))
+    # From here on a spec write is in play, so any failure blocks (fails closed).
+    try:
+        report = []
+        for spec in specs:
+            problems, intent_rel = check_spec(spec)
+            if problems:
+                report.append((spec, intent_rel, problems))
+        if not report:
+            return 0
+        message = render(report, cwd)
+    except Exception as exc:  # noqa: BLE001
+        message = (
+            "Blocked by the asdlc intent gate: the paired intent could not be checked "
+            f"({type(exc).__name__}: {exc}). A spec is never written unchecked. Tell the "
+            "user this is blocking; do not write the spec another way.\n"
+        )
 
-    if not report:
-        return 0
-
-    sys.stderr.write(render(report, cwd))
+    emit(message)
     return 2
+
+
+def emit(text):
+    # Encode explicitly so a Windows code page cannot crash the gate open.
+    try:
+        sys.stderr.buffer.write(text.encode("utf-8"))
+        sys.stderr.buffer.flush()
+    except (AttributeError, OSError):
+        sys.stderr.write(text.encode("ascii", "replace").decode("ascii"))
 
 
 def spec_paths(event, cwd):
@@ -95,7 +113,7 @@ def spec_paths(event, cwd):
     paths = []
     if tool in WRITE_TOOLS:
         p = params.get("file_path") or ""
-        if os.path.basename(p) == SPEC_NAME:
+        if re.split(r"[\\/]", p)[-1] == SPEC_NAME:
             paths.append(p)
     elif tool == "Bash":
         cmd = params.get("command") or ""
@@ -106,6 +124,7 @@ def spec_paths(event, cwd):
 
 
 def check_spec(spec_path):
+    spec_path = spec_path.replace("\\", "/") if os.sep == "/" else spec_path
     slug = os.path.basename(os.path.dirname(spec_path))
     root = find_root(os.path.dirname(spec_path))
     if root is None:

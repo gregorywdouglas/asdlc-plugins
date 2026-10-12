@@ -82,7 +82,13 @@ Whether success signals are checkable is left to the human sign-off.
 
 The term list is in `hooks/check_intent.py`. A project extends it with
 `intent/tech-terms.txt`, one term per line; a line starting with `-` removes a
-default term. The hook needs Python 3 on the PATH as `python3` or `python`.
+default term.
+
+The hook needs a working Python 3, found as `python3`, `python` or the Windows
+`py -3` launcher. On Windows, turn off the Microsoft Store aliases for
+`python.exe` and `python3.exe` (Settings > Apps > Advanced app settings > App
+execution aliases), or they shadow a real install. If no working Python is
+found, spec writes are blocked rather than let through unchecked.
 
 ## Repo layout
 
