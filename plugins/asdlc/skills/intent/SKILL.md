@@ -26,10 +26,23 @@ Check `intent/` for an existing folder covering the same problem. If one
 exists, offer to amend it rather than starting a second intent for the same
 change.
 
+## Amending an intent
+
+Amend in place; never start a second intent for the same change. Record new
+statements as dated Evidence entries rather than rewriting what was said
+before, and change the other sections to match.
+
+If the intent is `accepted` and the amendment changes Problem, Proposed
+outcome, Constraints or Out of scope, set `status` back to `draft` and tell
+the user: the change needs re-acceptance, and specs stay blocked until then.
+Any other amendment (wording, Evidence, an owner named, a question answered)
+leaves the status as it is.
+
 ## Interview
 
 Use the AskUserQuestion tool, one round at a time, and let each answer choose
-the next round.
+the next round. If it isn't available, ask in plain text, one question at a
+time.
 
 Cover the problem, who is affected and how they cope today, what better looks
 like in observable terms, what is out of scope, hard constraints and who owns
@@ -53,10 +66,19 @@ question is really a design decision, don't pursue it in the interview:
 record it as an open question with `needed by: design` and owner "design
 pass", and move on.
 
-When the user answers with a technology or a design, ask what outcome it
-serves and record the outcome. Keep a technical choice only if it is genuinely
-fixed, list it under Constraints with who fixed it, and tell the user you did
-this so they can see the pattern in their own answers.
+When the user answers with mechanism, ask what outcome it serves and record
+the outcome. Mechanism is any technology or product name, schema or field,
+file, component or orchestration name, or sequence of steps. In a refactor or
+migration it usually arrives as the names of what exists today. Keep a
+technical choice only if it is genuinely fixed, list it under Constraints with
+who fixed it, and tell the user you did this so they can see the pattern in
+their own answers.
+
+Ask whether the change touches authentication, data classification or
+personal data, or a contract other systems or parties rely on. If it does,
+Flagged concerns must name each concern and its owner. If it touches none of
+them, write that explicitly under Flagged concerns rather than leaving the
+section empty.
 
 When the user can't answer, record an open question with a named owner. Don't
 fill the gap with a plausible guess — an honest open question is worth more to
@@ -70,8 +92,11 @@ because the drafting needs one.
 ## Stop condition
 
 Keep going until every section of the template could be acted on by someone
-who was not in this conversation. Then tell the user which sections are still
-thin and why, before writing anything.
+who was not in this conversation. Then, before writing anything, check the
+draft against each rule of the accept rule in `intent/README.md` and tell the
+user which rules it fails and why, alongside any sections that are still
+thin. The intent gate will block a spec on the same rules, so this report is
+the user's list of what stands between the draft and acceptance.
 
 ## Output
 
@@ -82,6 +107,27 @@ user before creating the folder, since later artifacts and branches reuse it.
 
 Leave `title` for last and derive it from the Problem section.
 
+Write these lines in exactly this form, because the intent gate reads them:
+
+- Open question: `- <question> — owner: <name>, needed by: <acceptance | design | date>`
+- Flagged concern: `- <concern> — owner: <name>`
+- Constraint: `- <constraint> — fixed by <who>, because <reason>`
+
+Every open question has both `owner:` and `needed by:`. `<name>` is a person;
+a role is written `<role> (person to be named)` and does not satisfy a
+question needed by acceptance. Design questions may be owned by `design pass`.
+
+`policy_owners` lists the named owners of the Flagged concerns, or `[]` if
+there are none. If this intent is a slice of a broader one, set `parent` to
+the broader intent's id, copy its failure signal into How we would know it
+worked, and add a constraint that the slice follows the parent's decisions;
+where the parent has not decided, the slice records an open question owned by
+the parent's owner instead of deciding.
+
+Evidence records this interview: its date, and the user's key answers in
+their own words. If the user supplies source material (a ticket, an alert, a
+document extract), save it in the intent's folder and cite it by path.
+
 Use the user's own terms for their business, people and documents; don't
 rename them into analyst or vendor vocabulary. The exception is technology:
 technology terms stay out of Proposed outcome even when they are the user's
@@ -91,7 +137,8 @@ Name only systems, teams and documents that the user named or that a cited
 source names. Don't infer that a system is affected because similar changes
 usually touch one; ask instead.
 
-Write no code, no design, and no other files. Do not commit and do not set
+Write no code and no design. Besides `intent.md`, write only evidence files
+the user supplied, in the intent's folder. Do not commit and do not set
 status to accepted — acceptance is the user's decision, recorded by their
 commit.
 

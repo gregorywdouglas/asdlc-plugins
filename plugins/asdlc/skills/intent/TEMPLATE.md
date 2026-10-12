@@ -8,6 +8,7 @@ source: idea        # idea | ticket | incident | scan-finding
 source_ref:         # ticket ID, alert ID, PR/commit SHA, or omit
 policy_owners: []   # names of people who must resolve a Flagged concern
 supersedes:         # id of the intent this replaces, or omit
+parent:             # id of the broader intent this is a slice of, or omit
 ---
 
 # <Title>

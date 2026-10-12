@@ -195,6 +195,13 @@ def check_intent(text, root, intent_rel):
             "Frontmatter is missing: " + ", ".join(missing) +
             ". Write every template field; use an explicit empty value where one does not apply."
         )
+    parent = fm.get("parent", "").strip()
+    if parent:
+        if not os.path.isfile(os.path.join(root, "intent", parent, "intent.md")):
+            problems.append(
+                f"parent is '{parent}', but intent/{parent}/intent.md does not exist. "
+                "A slice must name an existing broader intent."
+            )
     po = fm.get("policy_owners", "")
     if re.search(r"\b(tbd|tba|unknown|unassigned)\b", po, re.IGNORECASE):
         problems.append(f"policy_owners is '{po.strip()}'. Name the people, or use [] if none.")
@@ -206,7 +213,13 @@ def check_intent(text, root, intent_rel):
             owner, needed = owner_of(q), needed_by(q)
             label = first_words(q)
             if owner is None:
-                problems.append(f"Open question has no owner: \"{label}\"")
+                problems.append(
+                    f"Open question has no owner in the form '— owner: <name>, needed by: <stage>': \"{label}\""
+                )
+            elif not needed:
+                problems.append(
+                    f"Open question has no 'needed by:' (acceptance, design or a date): \"{label}\""
+                )
             elif is_placeholder(owner):
                 problems.append(f"Open question owner is '{owner}': \"{label}\"")
             elif needed.startswith("acceptance"):
@@ -226,7 +239,9 @@ def check_intent(text, root, intent_rel):
             label = first_words(c)
             m = re.search(r"fixed by\s+(.+?)(?:,|\bbecause\b|$)", c, re.IGNORECASE)
             if not m:
-                problems.append(f"Constraint does not say who fixed it: \"{label}\"")
+                problems.append(
+                    f"Constraint does not say who fixed it in the form '— fixed by <who>, because <reason>': \"{label}\""
+                )
             elif is_placeholder(clean(m.group(1))):
                 problems.append(f"Constraint owner is '{clean(m.group(1))}': \"{label}\"")
 

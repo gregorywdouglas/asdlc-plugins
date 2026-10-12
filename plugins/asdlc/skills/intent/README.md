@@ -13,6 +13,7 @@ intent/
   README.md                this file
   <slug>/
     intent.md              the artifact
+    <evidence files>       source material the originator supplied
 ```
 
 One folder per change, named with the same kebab-case slug as the `id` in
@@ -33,6 +34,14 @@ away.
 
 Rejected and superseded intents stay in the tree. The value of the intent home
 is the record of what was asked for, including what was turned down.
+
+## Slices
+
+An intent can be a slice of a broader one, named in its `parent` field. The
+slice follows the parent's decisions; where the parent has not decided, the
+slice records an open question owned by the parent's owner rather than
+deciding. It also carries the parent's failure signal, so a slice cannot
+quietly become another silo.
 
 ## Accept / reject rule
 
@@ -69,9 +78,12 @@ in `intent/tech-terms.txt`, one per line.
 ## Correcting an accepted intent
 
 If the Design or Build stage shows the intent was wrong, amend the intent and
-commit the change — do not fix it only in the spec. Intent commits dated after
-the first `spec.md` commit for the same change are the signal being tracked
-here, and hiding them in the spec destroys the signal.
+commit the change — do not fix it only in the spec. An amendment to Problem,
+Proposed outcome, Constraints or Out of scope sets `status` back to `draft`,
+so it needs re-acceptance; other amendments leave the status alone.
+
+Intent commits dated after the first spec commit for the same change are the
+signal being tracked here, and hiding them in the spec destroys the signal.
 
 ## Writing one
 

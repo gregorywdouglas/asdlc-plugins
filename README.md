@@ -87,9 +87,11 @@ The spec's folder name is taken as the slug. The write is blocked unless
 
 - status is `accepted` in the last commit, not only in the working copy;
 - every template frontmatter field is present, and `policy_owners` is not TBD;
-- every open question has an owner, and those needed by acceptance name a
-  person rather than a role or "design pass";
-- every constraint says who fixed it;
+- every open question is written `— owner: <name>, needed by: <stage>`, and
+  those needed by acceptance name a person rather than a role or "design
+  pass";
+- every constraint says who fixed it (`— fixed by <who>, because <reason>`);
+- a `parent`, if set, names an intent that exists;
 - Proposed outcome names no technology from the term list;
 - Flagged concerns is populated, with owners, or marked not applicable.
 

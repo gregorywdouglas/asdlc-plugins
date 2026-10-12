@@ -1,6 +1,6 @@
 # /asdlc:intent — Handoff
 
-Oct 11, 2026 · @Gregory · plugin version 0.2.4
+Oct 11, 2026 · @Gregory · plugin version 0.2.5
 
 ## What the skill is
 
@@ -21,7 +21,7 @@ asdlc-plugins/
 ├── .claude-plugin/marketplace.json      name: asdlc-plugins
 ├── README.md
 └── plugins/asdlc/
-    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.4
+    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.5
     ├── hooks/
     │   ├── hooks.json                   PreToolUse gate on spec writes
     │   ├── run_gate.sh                  finds a working Python 3, fails closed
@@ -52,6 +52,7 @@ The skill prefers a project's own `intent/TEMPLATE.md` and falls back to the one
 | 0.2.1 | Gate fails closed when Python is missing; Windows fixes (Store aliases, `py -3`, encoding, backslash paths) |
 | 0.2.2 | Gate matches every spec-named file, not only `spec.md`; skips repos with no `intent/` folder |
 | 0.2.3 | Gate also covers the PowerShell tool, which is on by default on Windows |
+| 0.2.5 | Exact line formats the gate reads; pre-write check against the accept rule; amend rules (material changes to an accepted intent reset it to draft); mechanism defined beyond technology names; Flagged-concerns triggers; supplied evidence saved beside the intent; `parent` field for slices. Gate: open questions need `needed by:`, and `parent` must exist |
 | 0.2.4 | Interview rules: owners asked early, constraint checklist, design questions deferred to the design pass, facts kept apart from assumptions, the user's terminology kept, no inferred systems |
 
 Release routine: validate with `claude plugin validate .`, bump the version, push to `main`. Then, in each Claude Code session, one at a time:
@@ -119,7 +120,7 @@ It also fires on description alone — "I have an idea for…" — without the s
 
 One folder per change under `intent/`, named with the slug: three or four lowercase hyphenated words naming the thing, not the change type, with no dates or ticket numbers. The same slug is reused by the spec, the plan and the branch.
 
-Frontmatter carries `id`, `title`, `originator`, `created`, `status`, `source`, `source_ref`, `policy_owners` and `supersedes`. Every field is written; an explicit empty value is used where one does not apply, never `TBD`.
+Frontmatter carries `id`, `title`, `originator`, `created`, `status`, `source`, `source_ref`, `policy_owners`, `supersedes` and, for a slice of a broader intent, `parent`. Every field is written; an explicit empty value is used where one does not apply, never `TBD`.
 
 | Section | Holds | Common failure |
 | --- | --- | --- |
@@ -133,7 +134,7 @@ Frontmatter carries `id`, `title`, `originator`, `created`, `status`, `source`, 
 | Open questions | Unresolved decisions, each with an owner | Filled with a guess, or left unowned |
 | Evidence | What was actually said, and where it came from | Summarised away; sources cited with no location |
 
-Status moves `draft` → `accepted` | `rejected` | `superseded`, and rejected intents stay in the tree.
+Status moves `draft` → `accepted` | `rejected` | `superseded`, and rejected intents stay in the tree. Amending Problem, Proposed outcome, Constraints or Out of scope of an accepted intent sets it back to `draft` for re-acceptance; other amendments leave the status alone.
 
 **Accept rule.** An intent may be accepted only when: every open question marked `needed by: acceptance` has a named person as owner (questions marked `needed by: design` may be owned by "design pass"); Proposed outcome names no technology; Flagged concerns is populated or explicitly not applicable; the success signals are checkable; and someone outside the drafting conversation could act on it. The commit that flips status to `accepted` is the sign-off.
 
@@ -143,7 +144,8 @@ A `PreToolUse` hook runs on every Write, Edit, MultiEdit, Bash and PowerShell ca
 
 - status is `accepted` **in the last commit**, not only in the working copy;
 - every template frontmatter field is present and `policy_owners` is not TBD;
-- every open question has an owner, and those needed by acceptance name a person rather than a role or "design pass";
+- every open question is written `— owner: <name>, needed by: <stage>`, and those needed by acceptance name a person rather than a role or "design pass";
+- a `parent`, if set, names an intent that exists;
 - every constraint says who fixed it;
 - Proposed outcome names no technology from the term list;
 - Flagged concerns is populated with owners, or marked not applicable.
@@ -166,7 +168,8 @@ The default term list is in `check_intent.py` (Azure integration services, commo
 ## Next steps
 
 - [ ] Finish the ownership pass on `cross-domain-documents`; get the named people to agree; commit `status: accepted`.
-- [ ] Draft the Guidewire IM/COP Agency Bill sibling intent with a parent link and the parent's "another silo" failure signal. Add a `parent` field to `TEMPLATE.md` and teach the gate about it (0.2.5).
+- [ ] Draft the Guidewire IM/COP Agency Bill slice with `parent: cross-domain-documents` and the parent's "another silo" failure signal.
+- [ ] Copy the 0.2.5 `TEMPLATE.md` and `README.md` into the Ascot repo's `intent/`, and rewrite existing open questions, concerns and constraints in the exact line formats.
 - [ ] Second real run on a refactor or migration item (e.g. the WMX BizTalk orchestrations feeding Maximo). Check whether 0.1.0's Corrections hold when mechanism arrives as file and component names. Add what fails to Corrections.
 - [ ] Copy the current `skills/intent/README.md` into every project that already has an `intent/` folder.
 - [ ] Decide on `disable-model-invocation: true` before enabling the plugin in a client repo.
