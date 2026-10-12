@@ -21,7 +21,7 @@ for py in python3 python "py -3"; do
 done
 
 case "$payload" in
-  *spec.md*)
+  *[Ss][Pp][Ee][Cc]*.[Mm][Dd]*)
     cat >&2 <<'EOF'
 Blocked by the asdlc intent gate: no working Python 3 was found, so the paired
 intent could not be checked, and a spec is never written unchecked.

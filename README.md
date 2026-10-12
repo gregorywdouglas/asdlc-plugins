@@ -66,9 +66,11 @@ replaces a bundled command or a project skill of the same name.
 ## Intent gate
 
 The plugin ships a `PreToolUse` hook that runs whenever a session writes or
-edits a file named `spec.md`, including through a shell redirect. The spec's
-folder name is taken as the slug, and the paired `intent/<slug>/intent.md`
-must pass the accept rule or the write is blocked:
+edits a spec file, including through a shell or PowerShell command. A spec file
+is any Markdown file with "spec" as a word part of its name: `spec.md`,
+`provisional-spec.md`, `spec-draft.md`, `specification.md` and so on, but not
+`inspect.md`. The spec's folder name is taken as the slug, and the paired
+`intent/<slug>/intent.md` must pass the accept rule or the write is blocked:
 
 - status is `accepted` in the last commit, not only in the working copy;
 - every template frontmatter field is present, and `policy_owners` is not TBD;
@@ -79,6 +81,10 @@ must pass the accept rule or the write is blocked:
 - Flagged concerns is populated, with owners, or marked not applicable.
 
 Whether success signals are checkable is left to the human sign-off.
+
+The gate only applies inside a project that has an `intent/` folder, so a
+user-level install does not block spec files in repos that have not adopted
+the lifecycle.
 
 The term list is in `hooks/check_intent.py`. A project extends it with
 `intent/tech-terms.txt`, one term per line; a line starting with `-` removes a

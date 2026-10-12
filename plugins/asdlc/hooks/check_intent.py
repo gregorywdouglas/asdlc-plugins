@@ -62,7 +62,14 @@ PLACEHOLDER_OWNERS = re.compile(
 )
 
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit"}
-SPEC_NAME = "spec.md"
+# A spec is any Markdown file whose name contains "spec" as a word part:
+# spec.md, SPEC.md, provisional-spec.md, spec-draft.md, spec_v2.md, specs.md,
+# specification.md. Not inspect.md, respect.md or aspects.md.
+SPEC_FILE = re.compile(r"(?:^|[-_. ])spec(?:s|ification)?(?:[-_. ][^/\\]*)?\.md$", re.IGNORECASE)
+
+
+def is_spec(path):
+    return bool(SPEC_FILE.search(re.split(r"[\\/]", path)[-1]))
 
 
 def main():
@@ -113,13 +120,14 @@ def spec_paths(event, cwd):
     paths = []
     if tool in WRITE_TOOLS:
         p = params.get("file_path") or ""
-        if re.split(r"[\\/]", p)[-1] == SPEC_NAME:
+        if is_spec(p):
             paths.append(p)
     elif tool == "Bash":
         cmd = params.get("command") or ""
-        if SPEC_NAME in cmd and re.search(r"(>|\btee\b|\bcp\b|\bmv\b|\bsed\s+-i|\bperl\s+-[pi]|Out-File|Set-Content)", cmd):
-            for m in re.finditer(r"""([^\s'"<>|;&]*%s)""" % re.escape(SPEC_NAME), cmd):
-                paths.append(m.group(1))
+        if re.search(r"spec", cmd, re.IGNORECASE) and re.search(r"(>|\btee\b|\bcp\b|\bmv\b|\bsed\s+-i|\bperl\s+-[pi]|Out-File|Set-Content|Add-Content|New-Item|Copy-Item|Move-Item)", cmd):
+            for m in re.finditer(r"""([^\s'"<>|;&]+\.md)\b""", cmd, re.IGNORECASE):
+                if is_spec(m.group(1)):
+                    paths.append(m.group(1))
     return [p if os.path.isabs(p) else os.path.normpath(os.path.join(cwd, p)) for p in paths]
 
 
@@ -128,10 +136,10 @@ def check_spec(spec_path):
     slug = os.path.basename(os.path.dirname(spec_path))
     root = find_root(os.path.dirname(spec_path))
     if root is None:
-        return ([
-            f"No intent/ folder was found above {spec_path}. A spec needs an "
-            f"accepted intent at intent/{slug}/intent.md."
-        ], f"intent/{slug}/intent.md")
+        # No intent/ folder above the file: this project has not adopted the
+        # lifecycle, so the gate does not apply (the plugin may be installed for
+        # every repo on the machine).
+        return [], None
 
     intent_rel = f"intent/{slug}/intent.md"
     intent_path = os.path.join(root, "intent", slug, "intent.md")
