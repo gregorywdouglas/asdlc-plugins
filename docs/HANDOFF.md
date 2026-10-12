@@ -1,6 +1,6 @@
 # /asdlc:intent — Handoff
 
-Oct 11, 2026 · @Gregory · plugin version 0.2.2
+Oct 11, 2026 · @Gregory · plugin version 0.2.3
 
 ## What the skill is
 
@@ -21,7 +21,7 @@ asdlc-plugins/
 ├── .claude-plugin/marketplace.json      name: asdlc-plugins
 ├── README.md
 └── plugins/asdlc/
-    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.2
+    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.3
     ├── hooks/
     │   ├── hooks.json                   PreToolUse gate on spec writes
     │   ├── run_gate.sh                  finds a working Python 3, fails closed
@@ -51,6 +51,7 @@ The skill prefers a project's own `intent/TEMPLATE.md` and falls back to the one
 | 0.2.0 | The intent gate |
 | 0.2.1 | Gate fails closed when Python is missing; Windows fixes (Store aliases, `py -3`, encoding, backslash paths) |
 | 0.2.2 | Gate matches every spec-named file, not only `spec.md`; skips repos with no `intent/` folder |
+| 0.2.3 | Gate also covers the PowerShell tool, which is on by default on Windows |
 
 Release routine: validate with `claude plugin validate .`, bump the version, push to `main`. Then, in each Claude Code session, one at a time:
 
@@ -137,7 +138,7 @@ Status moves `draft` → `accepted` | `rejected` | `superseded`, and rejected in
 
 ## The intent gate
 
-A `PreToolUse` hook runs on every Write, Edit, MultiEdit and shell command. When the target is a spec file — any Markdown file with "spec" as a word part of its name (`spec.md`, `provisional-spec.md`, `spec-draft.md`, `specification.md`; not `inspect.md`) — it takes the spec's folder name as the slug and checks `intent/<slug>/intent.md`. It blocks the write unless:
+A `PreToolUse` hook runs on every Write, Edit, MultiEdit, Bash and PowerShell call. When the target is a spec file — any Markdown file with "spec" as a word part of its name (`spec.md`, `provisional-spec.md`, `spec-draft.md`, `specification.md`; not `inspect.md`) — it takes the spec's folder name as the slug and checks `intent/<slug>/intent.md`. It blocks the write unless:
 
 - status is `accepted` **in the last commit**, not only in the working copy;
 - every template frontmatter field is present and `policy_owners` is not TBD;
@@ -148,7 +149,7 @@ A `PreToolUse` hook runs on every Write, Edit, MultiEdit and shell command. When
 
 Whether success signals are checkable, and whether a stranger could act on the intent, stay with the human sign-off.
 
-The block lists every failure and tells the session to fix the intent rather than the spec and not to work around the gate. It fails closed: no working Python, or an internal error during a spec write, blocks the write. It does nothing in a repo with no `intent/` folder, so a user-level install leaves other repos alone.
+The block lists every failure and tells the session to fix the intent rather than the spec and not to work around the gate. It fails closed: no working Python, or an internal error during a spec write, blocks the write. It runs through `sh` (Git Bash on Windows); if `sh` cannot run at all, Claude Code treats that as a non-blocking hook error, so keep Git Bash installed. It does nothing in a repo with no `intent/` folder, so a user-level install leaves other repos alone.
 
 The default term list is in `check_intent.py` (Azure integration services, common platforms, protocols, Guidewire and other enterprise applications). A project adds terms in `intent/tech-terms.txt`, one per line; a line starting with `-` removes a default.
 
@@ -164,7 +165,7 @@ The default term list is in `check_intent.py` (Azure integration services, commo
 ## Next steps
 
 - [ ] Finish the ownership pass on `cross-domain-documents`; get the named people to agree; commit `status: accepted`.
-- [ ] Draft the Guidewire IM/COP Agency Bill sibling intent with a parent link and the parent's "another silo" failure signal. Add a `parent` field to `TEMPLATE.md` and teach the gate about it (0.2.3).
+- [ ] Draft the Guidewire IM/COP Agency Bill sibling intent with a parent link and the parent's "another silo" failure signal. Add a `parent` field to `TEMPLATE.md` and teach the gate about it (0.2.4).
 - [ ] Second real run on a refactor or migration item (e.g. the WMX BizTalk orchestrations feeding Maximo). Check whether 0.1.0's Corrections hold when mechanism arrives as file and component names. Add what fails to Corrections.
 - [ ] Copy the current `skills/intent/README.md` into every project that already has an `intent/` folder.
 - [ ] Decide on `disable-model-invocation: true` before enabling the plugin in a client repo.

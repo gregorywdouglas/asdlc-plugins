@@ -62,6 +62,7 @@ PLACEHOLDER_OWNERS = re.compile(
 )
 
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit"}
+SHELL_TOOLS = {"Bash", "PowerShell"}
 # A spec is any Markdown file whose name contains "spec" as a word part:
 # spec.md, SPEC.md, provisional-spec.md, spec-draft.md, spec_v2.md, specs.md,
 # specification.md. Not inspect.md, respect.md or aspects.md.
@@ -122,7 +123,7 @@ def spec_paths(event, cwd):
         p = params.get("file_path") or ""
         if is_spec(p):
             paths.append(p)
-    elif tool == "Bash":
+    elif tool in SHELL_TOOLS:
         cmd = params.get("command") or ""
         if re.search(r"spec", cmd, re.IGNORECASE) and re.search(r"(>|\btee\b|\bcp\b|\bmv\b|\bsed\s+-i|\bperl\s+-[pi]|Out-File|Set-Content|Add-Content|New-Item|Copy-Item|Move-Item)", cmd):
             for m in re.finditer(r"""([^\s'"<>|;&]+\.md)\b""", cmd, re.IGNORECASE):
