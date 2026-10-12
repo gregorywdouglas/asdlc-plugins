@@ -38,6 +38,21 @@ the obvious questions and dig into what the user probably hasn't worked
 through: conflicting stakeholders, failure and degraded modes, data ownership,
 and downstream systems that depend on today's behavior.
 
+Ask who owns or supports each affected process and system while you map who
+is affected, not at the end. Owners named early become the owners of the
+questions and concerns that come up later.
+
+When probing for constraints, check each kind in turn: security, compliance,
+data residency, budget, schedule, organisational standards, and limits of the
+platforms already in place. Each constraint you find still needs the
+authority that fixed it.
+
+Ask only questions whose answer would change the intent. Do not force
+decisions that belong to requirements, architecture or design. When a
+question is really a design decision, don't pursue it in the interview:
+record it as an open question with `needed by: design` and owner "design
+pass", and move on.
+
 When the user answers with a technology or a design, ask what outcome it
 serves and record the outcome. Keep a technical choice only if it is genuinely
 fixed, list it under Constraints with who fixed it, and tell the user you did
@@ -46,6 +61,11 @@ this so they can see the pattern in their own answers.
 When the user can't answer, record an open question with a named owner. Don't
 fill the gap with a plausible guess — an honest open question is worth more to
 the next stage than a finished-looking document.
+
+Keep facts and assumptions apart. A statement the user hasn't confirmed is
+marked unconfirmed where it appears, and if the intent depends on it, it is
+also an open question with an owner. Never turn an open question into a fact
+because the drafting needs one.
 
 ## Stop condition
 
@@ -61,6 +81,15 @@ the change type, with no dates or ticket numbers. Confirm the slug with the
 user before creating the folder, since later artifacts and branches reuse it.
 
 Leave `title` for last and derive it from the Problem section.
+
+Use the user's own terms for their business, people and documents; don't
+rename them into analyst or vendor vocabulary. The exception is technology:
+technology terms stay out of Proposed outcome even when they are the user's
+words.
+
+Name only systems, teams and documents that the user named or that a cited
+source names. Don't infer that a system is affected because similar changes
+usually touch one; ask instead.
 
 Write no code, no design, and no other files. Do not commit and do not set
 status to accepted — acceptance is the user's decision, recorded by their

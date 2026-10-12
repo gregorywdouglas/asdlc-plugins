@@ -1,6 +1,6 @@
 # /asdlc:intent — Handoff
 
-Oct 11, 2026 · @Gregory · plugin version 0.2.3
+Oct 11, 2026 · @Gregory · plugin version 0.2.4
 
 ## What the skill is
 
@@ -21,7 +21,7 @@ asdlc-plugins/
 ├── .claude-plugin/marketplace.json      name: asdlc-plugins
 ├── README.md
 └── plugins/asdlc/
-    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.3
+    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.4
     ├── hooks/
     │   ├── hooks.json                   PreToolUse gate on spec writes
     │   ├── run_gate.sh                  finds a working Python 3, fails closed
@@ -52,6 +52,7 @@ The skill prefers a project's own `intent/TEMPLATE.md` and falls back to the one
 | 0.2.1 | Gate fails closed when Python is missing; Windows fixes (Store aliases, `py -3`, encoding, backslash paths) |
 | 0.2.2 | Gate matches every spec-named file, not only `spec.md`; skips repos with no `intent/` folder |
 | 0.2.3 | Gate also covers the PowerShell tool, which is on by default on Windows |
+| 0.2.4 | Interview rules: owners asked early, constraint checklist, design questions deferred to the design pass, facts kept apart from assumptions, the user's terminology kept, no inferred systems |
 
 Release routine: validate with `claude plugin validate .`, bump the version, push to `main`. Then, in each Claude Code session, one at a time:
 
@@ -165,7 +166,7 @@ The default term list is in `check_intent.py` (Azure integration services, commo
 ## Next steps
 
 - [ ] Finish the ownership pass on `cross-domain-documents`; get the named people to agree; commit `status: accepted`.
-- [ ] Draft the Guidewire IM/COP Agency Bill sibling intent with a parent link and the parent's "another silo" failure signal. Add a `parent` field to `TEMPLATE.md` and teach the gate about it (0.2.4).
+- [ ] Draft the Guidewire IM/COP Agency Bill sibling intent with a parent link and the parent's "another silo" failure signal. Add a `parent` field to `TEMPLATE.md` and teach the gate about it (0.2.5).
 - [ ] Second real run on a refactor or migration item (e.g. the WMX BizTalk orchestrations feeding Maximo). Check whether 0.1.0's Corrections hold when mechanism arrives as file and component names. Add what fails to Corrections.
 - [ ] Copy the current `skills/intent/README.md` into every project that already has an `intent/` folder.
 - [ ] Decide on `disable-model-invocation: true` before enabling the plugin in a client repo.
