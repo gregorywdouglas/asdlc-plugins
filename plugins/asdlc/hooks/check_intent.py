@@ -56,6 +56,15 @@ REQUIRED_FIELDS = [
     "source_ref", "policy_owners", "supersedes",
 ]
 
+# Wording that says nobody is named yet, anywhere in an owner or authority.
+# Constraints and flagged concerns must name a real person or body; a role
+# awaiting a name, or "not named", does not count.
+NOT_YET_NAMED = re.compile(
+    r"(to be named|to be confirmed|not (yet )?(named|stated|known|given|recorded|identified)"
+    r"|\bunknown\b|\bunassigned\b|\btbd\b|\btba\b|<who>|<name>|<owner>)",
+    re.IGNORECASE,
+)
+
 PLACEHOLDER_OWNERS = re.compile(
     r"^(|unassigned.*|unknown.*|owner unknown.*|tbd.*|tba.*|none|n/?a|\?+|<name>)$",
     re.IGNORECASE,
@@ -189,6 +198,9 @@ def check_intent(text, root, intent_rel):
             )
 
     # Frontmatter completeness.
+    blank = [k for k in ("id", "title", "originator", "created") if k in fm and not fm[k].strip()]
+    if blank:
+        problems.append("Frontmatter fields must not be empty: " + ", ".join(blank) + ".")
     missing = [k for k in REQUIRED_FIELDS if k not in fm]
     if missing:
         problems.append(
@@ -242,13 +254,18 @@ def check_intent(text, root, intent_rel):
                 problems.append(
                     f"Constraint does not say who fixed it in the form '— fixed by <who>, because <reason>': \"{label}\""
                 )
-            elif is_placeholder(clean(m.group(1))):
-                problems.append(f"Constraint owner is '{clean(m.group(1))}': \"{label}\"")
+            elif is_placeholder(clean(m.group(1))) or NOT_YET_NAMED.search(m.group(1)):
+                problems.append(
+                    f"Constraint authority is '{clean(m.group(1))}', not a named person or body. "
+                    f"Name who fixed it, or move it to Open questions: \"{label}\""
+                )
 
     # Proposed outcome.
     outcome = sections.get("proposed outcome")
     if outcome is None:
         problems.append("Proposed outcome section is missing.")
+    elif not bullets(outcome):
+        problems.append("Proposed outcome has no outcomes, only the template placeholder.")
     else:
         found = tech_terms_in(outcome, root)
         if found:
@@ -261,16 +278,19 @@ def check_intent(text, root, intent_rel):
     # Flagged concerns.
     fc = sections.get("flagged concerns")
     fc_text = strip_guidance(fc or "")
-    if not fc_text:
+    fc_real = [b for b in bullets(fc or "")]
+    applies_none = re.search(r"not applicable|\bn/a\b|none apply|does not (touch|apply)", fc_text, re.IGNORECASE)
+    if not fc_real and not applies_none:
         problems.append(
             "Flagged concerns is empty. Populate it, or state explicitly that it does not apply."
         )
-    elif not re.search(r"not applicable|\bn/a\b|none apply|does not (touch|apply)", fc_text, re.IGNORECASE):
-        for c in bullets(fc):
+    elif not applies_none:
+        for c in fc_real:
             owner = owner_of(c)
-            if owner is None or is_placeholder(owner):
+            if owner is None or is_placeholder(owner) or NOT_YET_NAMED.search(owner):
                 problems.append(
-                    f"Flagged concern has no named owner ('{owner or 'none'}'): \"{first_words(c)}\""
+                    f"Flagged concern has no named owner ('{owner or 'none'}'); a role awaiting a "
+                    f"name does not count: \"{first_words(c)}\""
                 )
 
     return problems
@@ -352,11 +372,13 @@ def first_words(item, n=12):
 
 def strip_guidance(section):
     """Remove empty lines and template guidance paragraphs, keep bullets and real text."""
-    lines = [l for l in section.splitlines() if l.strip()]
-    text = "\n".join(lines)
-    if text.startswith("Points a security, compliance"):
-        text = "\n".join(l for l in lines if l.lstrip().startswith(("-", "*")))
-    return text.strip()
+    # Drop the template's own guidance paragraph (it quotes "Not applicable" as an
+    # example) and placeholder bullets; keep everything the author wrote.
+    paragraphs = re.split(r"\n\s*\n", section.strip())
+    kept = [p for p in paragraphs if not p.lstrip().startswith("Points a security, compliance")]
+    lines = [l for l in "\n".join(kept).splitlines()
+             if l.strip() and not re.match(r"^\s*[-*]\s+<", l)]
+    return "\n".join(lines).strip()
 
 
 def tech_terms_in(section, root):

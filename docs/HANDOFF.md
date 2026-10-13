@@ -1,6 +1,6 @@
 # /asdlc:intent — Handoff
 
-Oct 11, 2026 · @Gregory · plugin version 0.2.5
+Oct 11, 2026 · @Gregory · plugin version 0.2.6
 
 ## What the skill is
 
@@ -21,7 +21,7 @@ asdlc-plugins/
 ├── .claude-plugin/marketplace.json      name: asdlc-plugins
 ├── README.md
 └── plugins/asdlc/
-    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.5
+    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.6
     ├── hooks/
     │   ├── hooks.json                   PreToolUse gate on spec writes
     │   ├── run_gate.sh                  finds a working Python 3, fails closed
@@ -52,6 +52,7 @@ The skill prefers a project's own `intent/TEMPLATE.md` and falls back to the one
 | 0.2.1 | Gate fails closed when Python is missing; Windows fixes (Store aliases, `py -3`, encoding, backslash paths) |
 | 0.2.2 | Gate matches every spec-named file, not only `spec.md`; skips repos with no `intent/` folder |
 | 0.2.3 | Gate also covers the PowerShell tool, which is on by default on Windows |
+| 0.2.6 | Template: one-page aim and split prompt, cost as a number in Problem, Out of scope never empty, sample and run-by per signal, Grounds for rejection line, Evidence split into originator and other sources. Gate: constraints and flagged concerns reject roles awaiting a name and "not named"; an unfilled template (blank id, title, originator or created, no outcome, empty Flagged concerns) fails |
 | 0.2.5 | Exact line formats the gate reads; pre-write check against the accept rule; amend rules (material changes to an accepted intent reset it to draft); mechanism defined beyond technology names; Flagged-concerns triggers; supplied evidence saved beside the intent; `parent` field for slices. Gate: open questions need `needed by:`, and `parent` must exist |
 | 0.2.4 | Interview rules: owners asked early, constraint checklist, design questions deferred to the design pass, facts kept apart from assumptions, the user's terminology kept, no inferred systems |
 
@@ -146,9 +147,9 @@ A `PreToolUse` hook runs on every Write, Edit, MultiEdit, Bash and PowerShell ca
 - every template frontmatter field is present and `policy_owners` is not TBD;
 - every open question is written `— owner: <name>, needed by: <stage>`, and those needed by acceptance name a person rather than a role or "design pass";
 - a `parent`, if set, names an intent that exists;
-- every constraint says who fixed it;
+- every constraint names the person or body that fixed it, not a role awaiting a name;
 - Proposed outcome names no technology from the term list;
-- Flagged concerns is populated with owners, or marked not applicable.
+- Flagged concerns is populated with named owners (not roles awaiting a name), or marked not applicable.
 
 Whether success signals are checkable, and whether a stranger could act on the intent, stay with the human sign-off.
 
@@ -170,6 +171,7 @@ The default term list is in `check_intent.py` (Azure integration services, commo
 - [ ] Finish the ownership pass on `cross-domain-documents`; get the named people to agree; commit `status: accepted`.
 - [ ] Draft the Guidewire IM/COP Agency Bill slice with `parent: cross-domain-documents` and the parent's "another silo" failure signal.
 - [ ] Copy the 0.2.5 `TEMPLATE.md` and `README.md` into the Ascot repo's `intent/`, and rewrite existing open questions, concerns and constraints in the exact line formats.
+- [ ] After the WMX run, decide whether the gate should enforce the Grounds for rejection line and the `sample:` / `run by:` signal format (0.3.0).
 - [ ] Second real run on a refactor or migration item (e.g. the WMX BizTalk orchestrations feeding Maximo). Check whether 0.1.0's Corrections hold when mechanism arrives as file and component names. Add what fails to Corrections.
 - [ ] Copy the current `skills/intent/README.md` into every project that already has an `intent/` folder.
 - [ ] Decide on `disable-model-invocation: true` before enabling the plugin in a client repo.

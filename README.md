@@ -90,10 +90,12 @@ The spec's folder name is taken as the slug. The write is blocked unless
 - every open question is written `— owner: <name>, needed by: <stage>`, and
   those needed by acceptance name a person rather than a role or "design
   pass";
-- every constraint says who fixed it (`— fixed by <who>, because <reason>`);
+- every constraint names the person or body that fixed it (`— fixed by <who>,
+  because <reason>`), not a role awaiting a name or "not named";
 - a `parent`, if set, names an intent that exists;
 - Proposed outcome names no technology from the term list;
-- Flagged concerns is populated, with owners, or marked not applicable.
+- Flagged concerns is populated, each with a named owner rather than a role
+  awaiting a name, or marked not applicable.
 
 Whether the success signals are checkable, and whether someone outside the
 drafting conversation could act on the intent, are left to the human

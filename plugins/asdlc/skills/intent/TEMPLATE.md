@@ -13,31 +13,46 @@ parent:             # id of the broader intent this is a slice of, or omit
 
 # <Title>
 
+<!-- Aim for one page. A long intent is usually several intents: if Proposed
+outcome needs more than about five bullets, or its bullets need different
+owners, split it into slices that name this one as `parent`. -->
+
 ## Problem
 
-What cannot be done today, and what that costs. Written from the originator's
-position, not the system's. No proposed solution in this section.
+What cannot be done today, who pays for it, and how much. Give the cost as a
+number (time, money, errors, delay), or write "cost not yet measured" and add
+an open question to measure it. Written from the originator's position, not
+the system's. No proposed solution in this section. A short paragraph.
 
 ## Affected users and systems
 
-Who is affected and how they work around it now. Systems that produce or consume
-the current behavior, including any that have not been consulted and would notice
-a change.
+Who is affected and how they work around it now. Who owns or supports each
+affected process and system. Systems that produce or consume the current
+behavior, including any that have not been consulted and would notice a
+change.
 
 ## Proposed outcome
 
 What is true once this is done, stated so it can be checked without reading the
-implementation. Mechanism-free: no technology names, schemas, file layouts, or
-step sequences. If a technology is genuinely fixed, it belongs under Constraints
-with its reason, not here.
+implementation. Mechanism-free: no technology or product names, schemas, file
+layouts, component names, or step sequences. If a technology is genuinely
+fixed, it belongs under Constraints with its reason, not here.
+
+- <outcome>
 
 ## Out of scope
 
-What this explicitly does not cover, so the Design pass does not widen it.
+What this explicitly does not cover, so the Design pass does not widen it. At
+least one line; if nothing is excluded, write "Nothing excluded" so the choice
+is visible.
+
+- <exclusion>
 
 ## Constraints
 
-One per line, each with the owner or source of authority that makes it binding.
+One per line, each with the named person or body whose authority makes it
+binding. A constraint whose authority is not known is an open question, not a
+constraint.
 
 - <constraint> — fixed by <owner / policy / contract>, because <reason>
 
@@ -45,25 +60,39 @@ One per line, each with the owner or source of authority that makes it binding.
 
 Observable signals. What changes in behavior, in a metric, or in someone's day.
 This is what the Test stage will be asked to prove, so vagueness here is
-expensive later.
+expensive later. For each signal, say how the sample is chosen and who runs
+the check.
+
+- <signal> — sample: <how it is chosen>, run by: <who>
+- **Grounds for rejection:** <the result that would mean this failed>
 
 ## Flagged concerns
 
 Points a security, compliance, data, or UX owner would escalate. Each named to a
-policy owner. Empty only when the change touches none of them — say so
-explicitly rather than leaving the section blank.
+person. Empty only when the change touches none of them — say so explicitly,
+for example "Not applicable: touches no authentication, data classification,
+personal data or published contract."
 
 - <concern> — owner: <name>
 
 ## Open questions
 
-Unresolved decisions. Each with an owner, and a by-when where one exists. Do not
-guess an answer into this file.
+Unresolved decisions. Each with an owner and when it is needed. Do not guess an
+answer into this file.
 
-- <question> — owner: <name>, needed by: <date or stage>
+- <question> — owner: <name>, needed by: <acceptance | design | date>
 
 ## Evidence
 
-Where this came from. Conversation notes, ticket text, alert payload, scan
-finding, or prior intent. Enough for someone who was not in the room to see what
-was actually said.
+Where this came from, kept apart by who said it, so nobody mistakes research
+for the originator's view.
+
+### What the originator said
+
+Interview notes or the originator's own words, with dates.
+
+### Other sources
+
+Tickets, documents, alert payloads, scan findings, prior intents and research,
+each with a path, link or `source_ref`. Material the originator supplied sits
+in this intent's folder and is cited by path.

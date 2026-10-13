@@ -44,8 +44,9 @@ Use the AskUserQuestion tool, one round at a time, and let each answer choose
 the next round. If it isn't available, ask in plain text, one question at a
 time.
 
-Cover the problem, who is affected and how they cope today, what better looks
-like in observable terms, what is out of scope, hard constraints and who owns
+Cover the problem and what it costs today (as a number, if anyone has one),
+who is affected and how they cope today, what better looks like in observable
+terms, what is out of scope, hard constraints and who owns
 them, and what would get this rejected. Don't ask about implementation. Skip
 the obvious questions and dig into what the user probably hasn't worked
 through: conflicting stakeholders, failure and degraded modes, data ownership,
@@ -92,7 +93,9 @@ because the drafting needs one.
 ## Stop condition
 
 Keep going until every section of the template could be acted on by someone
-who was not in this conversation. Then, before writing anything, check the
+who was not in this conversation. If Proposed outcome has grown past about
+five bullets, or its bullets need different owners, propose splitting it into
+slices before writing. Then, before writing anything, check the
 draft against each rule of the accept rule in `intent/README.md` and tell the
 user which rules it fails and why, alongside any sections that are still
 thin. The intent gate will block a spec on the same rules, so this report is
@@ -112,10 +115,18 @@ Write these lines in exactly this form, because the intent gate reads them:
 - Open question: `- <question> — owner: <name>, needed by: <acceptance | design | date>`
 - Flagged concern: `- <concern> — owner: <name>`
 - Constraint: `- <constraint> — fixed by <who>, because <reason>`
+- Success signal: `- <signal> — sample: <how it is chosen>, run by: <who>`
 
 Every open question has both `owner:` and `needed by:`. `<name>` is a person;
 a role is written `<role> (person to be named)` and does not satisfy a
-question needed by acceptance. Design questions may be owned by `design pass`.
+question needed by acceptance, a flagged concern or a constraint. Design
+questions may be owned by `design pass`. A constraint whose authority nobody
+can name is not yet a constraint: record it as an open question instead.
+
+Follow the template's guidance on content: the Problem gives the cost as a
+number or says "cost not yet measured" and adds an open question to measure
+it; Out of scope has at least one line, or "Nothing excluded"; How we would
+know it worked ends with a **Grounds for rejection** line.
 
 `policy_owners` lists the named owners of the Flagged concerns, or `[]` if
 there are none. If this intent is a slice of a broader one, set `parent` to
@@ -124,8 +135,10 @@ worked, and add a constraint that the slice follows the parent's decisions;
 where the parent has not decided, the slice records an open question owned by
 the parent's owner instead of deciding.
 
-Evidence records this interview: its date, and the user's key answers in
-their own words. If the user supplies source material (a ticket, an alert, a
+Evidence has two parts. **What the originator said** records this interview:
+its date and the user's key answers in their own words. **Other sources**
+holds everything else, each with a path, link or `source_ref`, including any
+research you did. If the user supplies source material (a ticket, an alert, a
 document extract), save it in the intent's folder and cite it by path.
 
 Use the user's own terms for their business, people and documents; don't
