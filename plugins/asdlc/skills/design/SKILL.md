@@ -189,4 +189,8 @@ Recurring fixes the product owner has had to make to specs from this skill.
 Add one line per correction as they come up; each line is worth more than any
 guidance above it, because it came from a real spec.
 
-- (none yet)
+- 2026-10-18 · order-export (test fixture) · NFR-3 added an export audit log
+  the intent never asked for, traced to the intent's flagged concern. A
+  flagged concern is not a requirement source. A measure that answers a
+  concern goes in that concern's proposed resolution, and becomes a
+  requirement only once its owner accepts it.
