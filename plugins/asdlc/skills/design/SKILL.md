@@ -32,7 +32,10 @@ spec file.)
 ## Gate
 
 Check these in order from the repository root. At the first failure, stop,
-write nothing, and say which check failed and what would clear it.
+write nothing, and say which check failed and what would clear it. Run each
+git command on its own, with no `cd`, chaining or shell variables: the
+headless allowlist permits only single git commands, and the tool already
+reports the exit code.
 
 1. `intent/<slug>/intent.md` exists and its frontmatter `status` is
    `accepted`. A draft intent is refused: it is accepted by the commit that

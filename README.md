@@ -100,6 +100,12 @@ claude -p "/asdlc:design <slug> --headless" \
   --allowedTools "Read,Write,Glob,Grep,Skill,Bash(git ls-files:*),Bash(git diff:*),Bash(git log:*)"
 ```
 
+The allowlist is deliberately narrow: single `git ls-files`, `git diff` and
+`git log` commands, and no `cd`, `echo` or chaining. The skill runs each git
+check on its own for this reason. Don't widen the list to fix a refused
+compound command; Claude Code refuses commands with shell variables such as
+`$?` regardless, and an unattended job should run as little as it can.
+
 In headless mode the skill asks nothing: every gap becomes a flagged concern
 or a carried-forward question. Its closing report (concern count, owners,
 carried-forward questions) becomes the pull request body.

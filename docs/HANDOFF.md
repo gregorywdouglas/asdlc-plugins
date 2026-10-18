@@ -1,6 +1,6 @@
 # /asdlc:intent — Handoff
 
-Oct 18, 2026 · @Gregory · plugin version 0.3.1
+Oct 18, 2026 · @Gregory · plugin version 0.3.2
 
 ## What the skill is
 
@@ -21,7 +21,7 @@ asdlc-plugins/
 ├── .claude-plugin/marketplace.json      name: asdlc-plugins
 ├── README.md
 └── plugins/asdlc/
-    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.3.1
+    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.3.2
     ├── hooks/
     │   ├── hooks.json                   PreToolUse gate on spec writes
     │   ├── run_gate.sh                  finds a working Python 3, fails closed
@@ -51,6 +51,7 @@ The skill prefers a project's own `intent/TEMPLATE.md` and falls back to the one
 
 | Version | What it added |
 | --- | --- |
+| 0.3.2 | Design skill runs each gate git command on its own, so the narrow headless allowlist never refuses a compound command; README says why the allowlist stays narrow |
 | 0.3.1 | Design skill: first Correction (a flagged concern is not a requirement source) |
 | 0.3.0 | `/asdlc:design`: Stage 02 skill that writes the spec from an accepted, committed intent, applying the policy skills in `asdlc/policies.yaml` and flagging concerns to named owners; headless mode for CI |
 | 0.1.0 | Nine Corrections from the first real run; accept rule 1 scoped to `needed by: acceptance` |
