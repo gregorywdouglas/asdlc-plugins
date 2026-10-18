@@ -1,0 +1,23 @@
+# Default policy manifest for /asdlc:design.
+# A project overrides it entirely with asdlc/policies.yaml.
+#
+# Each entry: the domain, the skill applied to the spec as a constraint (the
+# name the Skill tool loads, e.g. "org-policy:security"), and the person its
+# flagged concerns route to. An empty owner is itself raised as a concern.
+policies:
+  - domain: brand
+    skill: brand
+    owner: ""
+  - domain: security
+    skill: security
+    owner: ""
+  - domain: compliance
+    skill: compliance
+    owner: ""
+  - domain: ux
+    skill: ux
+    owner: ""
+
+# Optional. The skill whose classes and criteria are used to propose
+# risk_class. Remove the line to fall back to standard | elevated | high.
+risk_classification_skill: risk-classification

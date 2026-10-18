@@ -69,10 +69,40 @@ over the project's copy and commit it; sessions read the project's copy.
 
 | Plugin  | Contents |
 | ------- | -------- |
-| `asdlc` | `/asdlc:intent` (draft an `intent.md`) and the intent gate hook |
+| `asdlc` | `/asdlc:intent` (draft an `intent.md`), `/asdlc:design` (write the `spec.md` for an accepted intent) and the intent gate hook |
 
-Later lifecycle skills (spec, plan, review) go in the same plugin under
+Later lifecycle skills (plan, review) go in the same plugin under
 `plugins/asdlc/skills/`, so one install carries the whole chain.
+
+## Design pass
+
+`/asdlc:design <slug>` is Stage 02. It runs only when
+`intent/<slug>/intent.md` is `accepted`, committed and unchanged from HEAD,
+and no `spec.md` exists yet. It loads every policy skill named in the
+project's `asdlc/policies.yaml` (or the plugin's default manifest), and writes
+`intent/<slug>/spec.md` at `status: draft`.
+
+Conflicts with policy go to the top of the spec as flagged concerns, each with
+a named owner from the manifest. A missing policy skill is flagged, never
+improvised. The skill does not commit: the product owner's commit that sets
+the spec's `status: accepted` is the sign-off, and starts Stage 3.
+
+A project overrides the spec template with `asdlc/design-template.md`. The
+name avoids the word "spec" because the intent gate treats any such file as a
+spec.
+
+**Headless (CI, not built yet).** A CI job will run the design pass when an
+intent is accepted, with nobody to answer questions:
+
+```bash
+claude -p "/asdlc:design <slug> --headless" \
+  --permission-mode acceptEdits \
+  --allowedTools "Read,Write,Glob,Grep,Skill,Bash(git ls-files:*),Bash(git diff:*),Bash(git log:*)"
+```
+
+In headless mode the skill asks nothing: every gap becomes a flagged concern
+or a carried-forward question. Its closing report (concern count, owners,
+carried-forward questions) becomes the pull request body.
 
 ## Intent gate
 
@@ -167,6 +197,9 @@ plugins/asdlc/
   skills/intent/SKILL.md            the interview, its rules and Corrections
   skills/intent/TEMPLATE.md         the intent.md skeleton
   skills/intent/README.md           accept rule, copied into a project's intent/
+  skills/design/SKILL.md            the design pass, its gate and Corrections
+  skills/design/TEMPLATE.md         the spec.md skeleton
+  skills/design/policies.yaml       default policy manifest
 ```
 
 Skills reference their own resources with `${CLAUDE_SKILL_DIR}`, and hooks

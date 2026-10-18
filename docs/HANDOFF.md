@@ -1,6 +1,6 @@
 # /asdlc:intent — Handoff
 
-Oct 11, 2026 · @Gregory · plugin version 0.2.6
+Oct 18, 2026 · @Gregory · plugin version 0.3.0
 
 ## What the skill is
 
@@ -21,15 +21,19 @@ asdlc-plugins/
 ├── .claude-plugin/marketplace.json      name: asdlc-plugins
 ├── README.md
 └── plugins/asdlc/
-    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.2.6
+    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.3.0
     ├── hooks/
     │   ├── hooks.json                   PreToolUse gate on spec writes
     │   ├── run_gate.sh                  finds a working Python 3, fails closed
     │   └── check_intent.py              the accept-rule checks
-    └── skills/intent/
-        ├── SKILL.md                     the interview, its rules, Corrections
-        ├── TEMPLATE.md                  the intent.md skeleton
-        └── README.md                    copied into a project's intent/ on first use
+    ├── skills/intent/
+    │   ├── SKILL.md                     the interview, its rules, Corrections
+    │   ├── TEMPLATE.md                  the intent.md skeleton
+    │   └── README.md                    copied into a project's intent/ on first use
+    └── skills/design/
+        ├── SKILL.md                     the design pass: gate, policy loading, Corrections
+        ├── TEMPLATE.md                  the spec skeleton
+        └── policies.yaml                default policy manifest
 ```
 
 | File | What it carries | Edit it when |
@@ -47,6 +51,7 @@ The skill prefers a project's own `intent/TEMPLATE.md` and falls back to the one
 
 | Version | What it added |
 | --- | --- |
+| 0.3.0 | `/asdlc:design`: Stage 02 skill that writes the spec from an accepted, committed intent, applying the policy skills in `asdlc/policies.yaml` and flagging concerns to named owners; headless mode for CI |
 | 0.1.0 | Nine Corrections from the first real run; accept rule 1 scoped to `needed by: acceptance` |
 | 0.2.0 | The intent gate |
 | 0.2.1 | Gate fails closed when Python is missing; Windows fixes (Store aliases, `py -3`, encoding, backslash paths) |
@@ -163,7 +168,7 @@ The default term list is in `check_intent.py` (Azure integration services, commo
 - **Gate live on Windows.** Verified in VS Code on 2026-10-11: it blocked `intent/cross-domain-documents/spec.md` first for missing Python (fail-closed), then, with Python installed, for the intent's actual gaps across seven categories. The session stopped rather than writing the spec another way.
 - **`cross-domain-documents` is being narrowed (option 2).** Design-level questions move to `needed by: design` / owner "design pass", technology comes out of the outcome, ownerless constraints become open questions, and the SharePoint interim-versus-backing contradiction is resolved or demoted. What remains is a short list of acceptance-blocking items needing named people (Srini, Brian, the PwC lead, a Legal and Compliance contact). A sibling intent for the Guidewire IM/COP Agency Bill first slice, answering to the parent, is the planned route to a first spec.
 - **Single-person sign-off.** Originator, product owner and tech lead are the same person. The gate is the only control not dependent on that person's discipline.
-- **Only the Plan stage exists.** Spec, plan and review skills are not written.
+- **Intent and design stages exist.** `/asdlc:design` is written but has had no real run. Plan and review skills are not written, and the headless CI job for the design pass is not built.
 - **The github plugin's MCP server is failing.** Not needed for intent work; blocks the PR review stage later.
 
 ## Next steps
@@ -175,7 +180,9 @@ The default term list is in `check_intent.py` (Azure integration services, commo
 - [ ] Second real run on a refactor or migration item (e.g. the WMX BizTalk orchestrations feeding Maximo). Check whether 0.1.0's Corrections hold when mechanism arrives as file and component names. Add what fails to Corrections.
 - [ ] Copy the current `skills/intent/README.md` into every project that already has an `intent/` folder.
 - [ ] Decide on `disable-model-invocation: true` before enabling the plugin in a client repo.
-- [ ] Write the spec skill.
+- [x] Write the spec skill (`/asdlc:design`, 0.3.0).
+- [ ] First real design run; record fixes in the design skill's Corrections.
+- [ ] Build the intent-accepted CI job that runs `/asdlc:design <slug> --headless` (see README).
 
 If a draft needs almost no correction, the interview is too easy. Harden the questions rather than declaring it done.
 
