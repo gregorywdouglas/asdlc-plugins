@@ -97,11 +97,13 @@ intent is accepted, with nobody to answer questions:
 ```bash
 claude -p "/asdlc:design <slug> --headless" \
   --permission-mode acceptEdits \
-  --allowedTools "Read,Write,Glob,Grep,Skill,Bash(git ls-files:*),Bash(git diff:*),Bash(git log:*)"
+  --allowedTools "Read,Write,Glob,Grep,Skill,Bash(git ls-files:*),Bash(git diff:*),Bash(git log:*),Bash(git status:*)"
 ```
 
-The allowlist is deliberately narrow: single `git ls-files`, `git diff` and
-`git log` commands, and no `cd`, `echo` or chaining. The skill runs each git
+The allowlist is deliberately narrow: single `git ls-files`, `git diff`,
+`git log` and `git status` commands, and no `cd`, `echo` or chaining.
+`git status` is how the skill checks whether a policy skill's `SKILL.md` has
+uncommitted changes. The skill runs each git
 check on its own for this reason. Don't widen the list to fix a refused
 compound command; Claude Code refuses commands with shell variables such as
 `$?` regardless, and an unattended job should run as little as it can.
