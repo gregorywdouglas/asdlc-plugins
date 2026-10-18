@@ -102,11 +102,14 @@ Fill every section of the template.
   intent constraint cannot both hold, do not choose between them: flag it,
   cite both, and route it to the policy owner.
 - Answer each open question from the intent, or carry it forward with its
-  original owner and needed-by. Answer only from the intent, a policy rule, or
-  the user in interactive mode, and say which; never guess an answer in.
-  Every question in the intent appears in the spec. A question owned by
-  "design pass" is this skill's to answer; if it can't, carry it forward to
-  the intent's originator, marked "reassigned from design pass".
+  original owner. Answer only from the intent, a policy rule, or the user in
+  interactive mode, and say which; never guess an answer in. Every question in
+  the intent appears in the spec. A question owned by "design pass" is this
+  skill's to answer; if it can't, carry it forward to the intent's originator,
+  marked "reassigned from design pass".
+- A carried-forward question keeps a dated needed-by. Any other needed-by
+  becomes `spec acceptance`, because the design stage it was waiting for is
+  this one, and it has run.
 - Carry every flagged concern from the intent into the spec's table with its
   owner. The proposed resolution may give this design's answer, but only the
   owner closes it.
