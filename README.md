@@ -91,8 +91,82 @@ A project overrides the spec template with `asdlc/design-template.md`. The
 name avoids the word "spec" because the intent gate treats any such file as a
 spec.
 
-**Headless (CI, not built yet).** A CI job will run the design pass when an
-intent is accepted, with nobody to answer questions:
+## Design pass in CI
+
+`.github/workflows/design-pass.yml` is a reusable workflow that runs the
+design pass when an intent is accepted, with nobody to answer questions. For
+each intent a push to the default branch moves to `accepted` (and that has no
+`spec.md` yet), it:
+
+1. runs `/asdlc:design <slug> --headless` with the plugin from this repo;
+2. checks that the run wrote only `intent/<slug>/spec.md`, at `status: draft`,
+   and changed nothing else (`ci/design-pass/check-output.sh`), and fails
+   otherwise;
+3. commits the spec to a new `design/<slug>` branch and opens a pull request
+   whose body is the skill's closing report;
+4. keeps the full session transcript and the exact command as the
+   `design-transcript-<slug>` artifact for 90 days, whether the pass
+   succeeded or not.
+
+The spec records the intent SHA, the design skill's version, the command
+that ran it, and every policy skill's version. The CI commit adds the plugin
+commit and a link to the run, so each spec can be traced to what produced it.
+
+A wording fix to an already accepted intent does not start a second pass; an
+intent amended back to `draft` and accepted again does, if it still has no
+spec (`ci/design-pass/detect.sh`). Several intents accepted in one push each
+get their own job, branch and pull request. The product owner works the
+concerns on that pull request and accepts the spec by committing
+`status: accepted` on the branch.
+
+**Caller.** Commit this to the project as `.github/workflows/asdlc-design.yml`:
+
+```yaml
+name: Design pass
+on:
+  push:
+    branches: [main]
+    paths: ["intent/*/intent.md"]
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: Intent slug to design
+        required: true
+jobs:
+  design:
+    uses: gregorywdouglas/asdlc-plugins/.github/workflows/design-pass.yml@main
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      slug: ${{ inputs.slug || '' }}
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ASDLC_PLUGINS_TOKEN: ${{ secrets.ASDLC_PLUGINS_TOKEN }}
+```
+
+The manual trigger runs one intent by slug, for a pass that failed or was
+skipped. Optional inputs: `asdlc_ref` (default `main`; keep it the same as
+the `@ref` above), `claude_code_version` (default `2.1.302`) and
+`max_budget_usd` (default `5`, per intent).
+
+**Setup, once per project:**
+
+- Secret `ANTHROPIC_API_KEY`.
+- Secret `ASDLC_PLUGINS_TOKEN`: a fine-grained token with read-only Contents
+  access to `gregorywdouglas/asdlc-plugins`. This repo is private, and the
+  job clones it for the plugin and the scripts.
+- In the project: Settings > Actions > General > Workflow permissions,
+  turn on "Allow GitHub Actions to create and approve pull requests".
+- In this repo, once: Settings > Actions > General > Access, choose
+  "Accessible from repositories owned by the user", so private projects can
+  call the workflow.
+
+Pull requests opened with the job's own token don't trigger other workflows.
+If the project runs checks on pull requests, push an empty commit to the
+branch, or switch the job to a GitHub App token.
+
+**What the session can do.** The design pass runs with this allowlist:
 
 ```bash
 claude -p "/asdlc:design <slug> --headless" \
@@ -103,14 +177,18 @@ claude -p "/asdlc:design <slug> --headless" \
 The allowlist is deliberately narrow: single `git ls-files`, `git diff`,
 `git log` and `git status` commands, and no `cd`, `echo` or chaining.
 `git status` is how the skill checks whether a policy skill's `SKILL.md` has
-uncommitted changes. The skill runs each git
-check on its own for this reason. Don't widen the list to fix a refused
-compound command; Claude Code refuses commands with shell variables such as
-`$?` regardless, and an unattended job should run as little as it can.
+uncommitted changes. The skill runs each git check on its own for this
+reason. Don't widen the list to fix a refused compound command; Claude Code
+refuses commands with shell variables such as `$?` regardless, and an
+unattended job should run as little as it can.
+
+Only the Anthropic key reaches that step. The checkout keeps no credentials
+and no GitHub token is set, so the session cannot push; the job commits and
+opens the pull request itself, after the output check. The intent gate hook
+ships with the plugin and runs in CI too.
 
 In headless mode the skill asks nothing: every gap becomes a flagged concern
-or a carried-forward question. Its closing report (concern count, owners,
-carried-forward questions) becomes the pull request body.
+or a carried-forward question.
 
 ## Intent gate
 
@@ -196,6 +274,9 @@ each release.
 
 ```
 .claude-plugin/marketplace.json     catalog: which plugins live here
+.github/workflows/design-pass.yml   reusable CI workflow for the headless design pass
+ci/design-pass/detect.sh            which intents a push accepted
+ci/design-pass/check-output.sh      the run wrote only a draft spec.md
 docs/HANDOFF.md                     current state and next steps
 plugins/asdlc/
   .claude-plugin/plugin.json        plugin manifest, including version

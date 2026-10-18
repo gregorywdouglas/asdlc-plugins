@@ -3,6 +3,8 @@ title:                   # from the intent, one line
 slug:                    # matches the intent's folder name and id
 status: draft            # draft | accepted (set only by the product owner's commit)
 intent_sha:              # commit that last changed the accepted intent.md
+design_skill:            # asdlc:design@<plugin version> that wrote this spec
+design_command:          # the invocation exactly as run, e.g. "/asdlc:design <slug> --headless"
 policy_skills: []        # name@version for every policy and risk skill applied; name@missing if absent
 risk_class_proposed:     # standard | elevated | high, or the classification skill's classes
 flagged_concerns: 0      # number of rows in Flagged concerns
@@ -13,7 +15,8 @@ flagged_concerns: 0      # number of rows in Flagged concerns
 ## Flagged concerns
 
 Ordered by severity: blocker | high | medium | low. Each owner is a name from
-the policy manifest, or the intent's originator for concerns about the intent.
+the policy manifest (both owners when two policies conflict), or the intent's
+originator for concerns about the intent.
 
 | # | Severity | Domain | Rule (skill § section) | Conflict | Proposed resolution | Owner |
 |---|----------|--------|------------------------|----------|---------------------|-------|

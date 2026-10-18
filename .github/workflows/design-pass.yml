@@ -1,0 +1,219 @@
+# asdlc design pass (Stage 02), as a reusable workflow.
+#
+# A project calls this on pushes that touch intent/*/intent.md. For each
+# intent the push accepted, it runs `/asdlc:design <slug> --headless`, checks
+# that only the new spec.md was written, and opens a pull request on
+# design/<slug> with the skill's closing report as the body. The product
+# owner reviews that PR; their commit setting the spec's status to accepted is
+# the sign-off, and starts Stage 3.
+#
+# See the README's "Design pass in CI" section for the caller and setup.
+name: asdlc design pass
+
+on:
+  workflow_call:
+    inputs:
+      slug:
+        description: Run on this intent only (manual runs). Empty means detect from the push.
+        type: string
+        default: ""
+      asdlc_repo:
+        description: Repository holding the asdlc plugin and these scripts.
+        type: string
+        default: gregorywdouglas/asdlc-plugins
+      asdlc_ref:
+        description: Branch or tag of asdlc_repo to use. Keep it the same as the ref this workflow is called at.
+        type: string
+        default: main
+      claude_code_version:
+        description: Claude Code CLI version to install.
+        type: string
+        default: "2.1.302"
+      max_budget_usd:
+        description: Spending cap for each design pass.
+        type: string
+        default: "5"
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+      ASDLC_PLUGINS_TOKEN:
+        description: Token with read access to asdlc_repo, which is private.
+        required: true
+
+env:
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      slugs: ${{ steps.detect.outputs.slugs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch the asdlc plugin
+        env:
+          ASDLC_REPO: ${{ inputs.asdlc_repo }}
+          ASDLC_REF: ${{ inputs.asdlc_ref }}
+          ASDLC_TOKEN: ${{ secrets.ASDLC_PLUGINS_TOKEN }}
+        run: git clone --quiet --depth 1 --branch "$ASDLC_REF" "https://x-access-token:${ASDLC_TOKEN}@github.com/${ASDLC_REPO}.git" "$RUNNER_TEMP/asdlc-plugins"
+
+      - name: Find intents to design
+        id: detect
+        env:
+          SLUG: ${{ inputs.slug }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if [ -n "$SLUG" ]; then
+            slugs=$(sh "$RUNNER_TEMP/asdlc-plugins/ci/design-pass/detect.sh" --slug "$SLUG")
+          else
+            slugs=$(sh "$RUNNER_TEMP/asdlc-plugins/ci/design-pass/detect.sh" "${BEFORE:-0000000000000000000000000000000000000000}" "$AFTER")
+          fi
+          echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
+          echo "Intents to design: $slugs"
+
+  design:
+    needs: detect
+    if: needs.detect.outputs.slugs != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJSON(needs.detect.outputs.slugs) }}
+    concurrency:
+      group: asdlc-design-${{ github.repository }}-${{ matrix.slug }}
+      cancel-in-progress: false
+    env:
+      SLUG: ${{ matrix.slug }}
+      BRANCH: design/${{ matrix.slug }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch the asdlc plugin
+        env:
+          ASDLC_REPO: ${{ inputs.asdlc_repo }}
+          ASDLC_REF: ${{ inputs.asdlc_ref }}
+          ASDLC_TOKEN: ${{ secrets.ASDLC_PLUGINS_TOKEN }}
+        run: git clone --quiet --depth 1 --branch "$ASDLC_REF" "https://x-access-token:${ASDLC_TOKEN}@github.com/${ASDLC_REPO}.git" "$RUNNER_TEMP/asdlc-plugins"
+
+      - name: Stop if the design branch already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git ls-remote --exit-code --heads "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH" > /dev/null; then
+            echo "::error::Branch $BRANCH already exists. Review or delete it before running the design pass again."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Claude Code
+        env:
+          VERSION: ${{ inputs.claude_code_version }}
+        run: npm install --global --no-fund --no-audit "@anthropic-ai/claude-code@${VERSION}"
+
+      # Only the Anthropic key reaches this step: no GitHub token, and the
+      # checkout kept no credentials, so the session cannot push. The intent
+      # gate hook ships with the plugin and runs here too (Python 3 is on the
+      # runner). The full session is kept as a transcript for the audit trail.
+      - name: Run the design pass
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BUDGET: ${{ inputs.max_budget_usd }}
+          DISABLE_AUTOUPDATER: "1"
+        run: |
+          mkdir -p "$RUNNER_TEMP/transcript"
+          printf '%s\n' "/asdlc:design $SLUG --headless" > "$RUNNER_TEMP/transcript/command.txt"
+          rc=0
+          claude -p "/asdlc:design $SLUG --headless" \
+            --plugin-dir "$RUNNER_TEMP/asdlc-plugins/plugins/asdlc" \
+            --permission-mode acceptEdits \
+            --allowedTools "Read,Write,Glob,Grep,Skill,Bash(git ls-files:*),Bash(git diff:*),Bash(git log:*),Bash(git status:*)" \
+            --max-budget-usd "$BUDGET" \
+            --no-session-persistence \
+            --output-format stream-json --verbose \
+            > "$RUNNER_TEMP/transcript/session.jsonl" || rc=$?
+          # Print the report before deciding, so a refusal is readable in the log.
+          jq -r 'select(.type == "result") | .result // ""' "$RUNNER_TEMP/transcript/session.jsonl" > "$RUNNER_TEMP/report.md" || true
+          cat "$RUNNER_TEMP/report.md"
+          is_error=$(jq -r 'select(.type == "result") | .is_error' "$RUNNER_TEMP/transcript/session.jsonl" 2> /dev/null || true)
+          if [ "$rc" -ne 0 ] || [ "$is_error" != false ]; then
+            echo "::error::The design pass ended with an error (exit $rc)."
+            exit 1
+          fi
+
+      # Kept whether the pass succeeded or not: a refusal needs its record too.
+      - name: Keep the transcript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-transcript-${{ matrix.slug }}
+          path: ${{ runner.temp }}/transcript/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Check the output
+        run: sh "$RUNNER_TEMP/asdlc-plugins/ci/design-pass/check-output.sh" "$SLUG"
+
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ASDLC_REPO: ${{ inputs.asdlc_repo }}
+          ASDLC_REF: ${{ inputs.asdlc_ref }}
+        run: |
+          asdlc_sha=$(git -C "$RUNNER_TEMP/asdlc-plugins" rev-parse HEAD)
+          spec="intent/$SLUG/spec.md"
+          title=$(sed -n 's/^title:[[:space:]]*//p' "$spec" | head -1)
+          intent_sha=$(git log -1 --format=%H -- "intent/$SLUG/intent.md")
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --quiet --create "$BRANCH"
+          git add "$spec"
+          git commit --quiet --file - <<EOF
+          design: draft spec for $SLUG
+
+          Written by the headless design pass from intent $intent_sha.
+          Status is draft. The product owner's commit setting it to accepted
+          is the sign-off.
+
+          Command: /asdlc:design $SLUG --headless
+          Plugin: $ASDLC_REPO@$ASDLC_REF ($asdlc_sha)
+          Run and transcript: $RUN_URL
+          EOF
+          git push --quiet "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/$BRANCH"
+
+          {
+            echo "Draft spec for \`$SLUG\`, from intent \`$intent_sha\`."
+            echo
+            echo "Work the flagged concerns at the top of \`$spec\` first. Accept the spec by committing \`status: accepted\` on this branch; that commit starts Stage 3."
+            echo
+            echo "## Design pass report"
+            echo
+            cat "$RUNNER_TEMP/report.md"
+            echo
+            echo "---"
+            echo "[Workflow run]($RUN_URL); the session transcript is attached as \`design-transcript-$SLUG\`."
+            echo
+            echo "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+          } > "$RUNNER_TEMP/pr-body.md"
+
+          gh pr create --base "${GITHUB_REF_NAME}" --head "$BRANCH" \
+            --title "Design: ${title:-$SLUG}" --body-file "$RUNNER_TEMP/pr-body.md"

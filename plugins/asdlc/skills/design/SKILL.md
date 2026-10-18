@@ -75,6 +75,12 @@ writing anything. Record each one as `name@version`:
   uncommitted or modified, record `name@uncommitted` and raise a low concern:
   the rules applied cannot be reproduced later.
 
+Record this skill the same way, as `asdlc:design@<version>` from
+`${CLAUDE_SKILL_DIR}/../../.claude-plugin/plugin.json`, and the command that
+ran it, exactly as invoked (for example `/asdlc:design order-export
+--headless`). With the policy versions and the intent SHA, they let anyone
+reproduce the conditions this spec was written under.
+
 If a listed skill is missing or fails to load, record `name@missing` and raise
 a high concern for that domain, owned by its listed owner, stating that the
 design was not checked against that policy. Do not substitute your own
@@ -104,6 +110,9 @@ Fill every section of the template.
   each constraint with how the design honours it. Where a policy rule and an
   intent constraint cannot both hold, do not choose between them: flag it,
   cite both, and route it to the policy owner.
+- Where two policy skills contradict each other for this design, do not
+  choose between them either: flag it, cite both rules, and name both
+  owners. Settling it is their call, not the spec's.
 - Answer each open question from the intent, or carry it forward with its
   original owner. Answer only from the intent, a policy rule, or the user in
   interactive mode, and say which; never guess an answer in. Every question in
@@ -140,8 +149,8 @@ amendment returns the intent to `draft` for re-acceptance.
 These are the points an analyst would have escalated. Each row states its
 severity, domain, the rule that triggered it (`skill § section`, or the intent
 section), why the design can't satisfy both, a proposed resolution, and the
-named owner from the manifest — or the intent's originator for concerns about
-the intent. Never TBD.
+named owner from the manifest — both owners when two policies conflict, or the
+intent's originator for concerns about the intent. Never TBD.
 
 Severity is `blocker` (the spec cannot be accepted until it is resolved),
 `high`, `medium`, or `low`. Order by severity. Concerns go at the top of the
@@ -173,8 +182,9 @@ its owner's resolution or the intent now answers it.
 ## Output
 
 Write `intent/<slug>/spec.md` with `status: draft` and the frontmatter filled
-in: title, slug, intent SHA, every policy skill with its version, the proposed
-risk class, and the number of flagged concerns.
+in: title, slug, intent SHA, this skill's version and the command that ran
+it, every policy skill with its version, the proposed risk class, and the
+number of flagged concerns.
 
 Write no plan, no code, and no other files. Do not edit `intent.md`. Do not
 commit and do not set status to accepted. Acceptance is the product owner's

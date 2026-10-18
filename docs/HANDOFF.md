@@ -1,6 +1,6 @@
 # /asdlc:intent — Handoff
 
-Oct 18, 2026 · @Gregory · plugin version 0.3.2
+Oct 18, 2026 · @Gregory · plugin version 0.3.3
 
 ## What the skill is
 
@@ -21,7 +21,7 @@ asdlc-plugins/
 ├── .claude-plugin/marketplace.json      name: asdlc-plugins
 ├── README.md
 └── plugins/asdlc/
-    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.3.2
+    ├── .claude-plugin/plugin.json       name: asdlc, version: 0.3.3
     ├── hooks/
     │   ├── hooks.json                   PreToolUse gate on spec writes
     │   ├── run_gate.sh                  finds a working Python 3, fails closed
@@ -51,6 +51,7 @@ The skill prefers a project's own `intent/TEMPLATE.md` and falls back to the one
 
 | Version | What it added |
 | --- | --- |
+| 0.3.3 | Design skill flags contradictions between policies to both owners, and records its own version and the command that ran it (`design_skill`, `design_command`). CI workflow for the headless design pass (`.github/workflows/design-pass.yml`, `ci/design-pass/`), keeping each run's transcript as an artifact |
 | 0.3.2 | Design skill runs each gate git command on its own, so the narrow headless allowlist never refuses a compound command; README says why the allowlist stays narrow |
 | 0.3.1 | Design skill: first Correction (a flagged concern is not a requirement source) |
 | 0.3.0 | `/asdlc:design`: Stage 02 skill that writes the spec from an accepted, committed intent, applying the policy skills in `asdlc/policies.yaml` and flagging concerns to named owners; headless mode for CI |
@@ -170,7 +171,7 @@ The default term list is in `check_intent.py` (Azure integration services, commo
 - **Gate live on Windows.** Verified in VS Code on 2026-10-11: it blocked `intent/cross-domain-documents/spec.md` first for missing Python (fail-closed), then, with Python installed, for the intent's actual gaps across seven categories. The session stopped rather than writing the spec another way.
 - **`cross-domain-documents` is being narrowed (option 2).** Design-level questions move to `needed by: design` / owner "design pass", technology comes out of the outcome, ownerless constraints become open questions, and the SharePoint interim-versus-backing contradiction is resolved or demoted. What remains is a short list of acceptance-blocking items needing named people (Srini, Brian, the PwC lead, a Legal and Compliance contact). A sibling intent for the Guidewire IM/COP Agency Bill first slice, answering to the parent, is the planned route to a first spec.
 - **Single-person sign-off.** Originator, product owner and tech lead are the same person. The gate is the only control not dependent on that person's discipline.
-- **Intent and design stages exist.** `/asdlc:design` is written but has had no real run. Plan and review skills are not written, and the headless CI job for the design pass is not built.
+- **Intent and design stages exist.** `/asdlc:design` is written but has had no real run. Plan and review skills are not written. The reusable CI workflow for the headless design pass (`.github/workflows/design-pass.yml`) is written and linted, and its scripts are tested locally, but it has not run on GitHub yet and no project calls it.
 - **The github plugin's MCP server is failing.** Not needed for intent work; blocks the PR review stage later.
 
 ## Next steps
@@ -184,7 +185,13 @@ The default term list is in `check_intent.py` (Azure integration services, commo
 - [ ] Decide on `disable-model-invocation: true` before enabling the plugin in a client repo.
 - [x] Write the spec skill (`/asdlc:design`, 0.3.0).
 - [ ] First real design run; record fixes in the design skill's Corrections.
-- [ ] Build the intent-accepted CI job that runs `/asdlc:design <slug> --headless` (see README).
+- [x] Build the intent-accepted CI job that runs `/asdlc:design <slug> --headless` (README, "Design pass in CI").
+- [ ] First CI run: add the caller and secrets to a project, accept an intent, and check the job opens a pull request.
+- [ ] Spec gate (`check_spec.py`), run in CI and as a hook: every manifest policy listed with a version, `flagged_concerns` matches the table, every intent question carried, every concern owned. The playbook's "a skill is a control, though an advisory one".
+- [ ] Evals for the design skill: turn the fixture (draft refused, missing policy flagged, nothing asked, only `spec.md` written) into a suite run on every skill or hook change, plus trigger tests across phrasings.
+- [ ] Route risk: label the design PR `risk:<class>`, and have CODEOWNERS or branch protection require a technical lead above `standard`.
+- [ ] Replace the long-lived `ASDLC_PLUGINS_TOKEN` with a short-lived GitHub App token (which also lets the PR trigger checks); consider Claude Code's sandbox and a network allowlist in CI.
+- [ ] Measures for Stage 02: time from `intent.md` commit to `spec.md` commit, and spec commits after the first `plan.md`.
 
 If a draft needs almost no correction, the interview is too easy. Harden the questions rather than declaring it done.
 
